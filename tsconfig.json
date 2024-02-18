@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "es2020",
+        "moduleResolution": "node",
+        "noResolve": false,
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "preserveConstEnums": true,
+        "lib": [
+            "dom",
+            "es6"
+        ],
+        "rootDir": "src"
+    }
+}

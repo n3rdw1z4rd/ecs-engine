@@ -1,0 +1,40 @@
+# See https://github.com/github/gitignore for more templates
+
+# Node Template
+# Compiled binary addons (https://github.com/nodejs/node-gyp)
+/build/
+dist/
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS-generated files
+**/.DS_Store
+**/Thumbs.db

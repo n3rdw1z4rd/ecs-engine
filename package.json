@@ -1,0 +1,30 @@
+{
+    "name": "ecs-engine",
+    "version": "0.1.0",
+    "description": "",
+    "entry": "src/index.ts",
+    "main": "dist/bundle.js",
+    "scripts": {
+        "dev": "webpack serve",
+        "build": "cross-env NODE_ENV=production webpack"
+    },
+    "keywords": [],
+    "author": "John Wakley <john.wakley@icloud.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:JohnCWakley/ecs-engine.git"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.16",
+        "cross-env": "^7.0.3",
+        "css-loader": "^6.10.0",
+        "html-webpack-plugin": "^5.6.0",
+        "style-loader": "^3.3.4",
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.3.3",
+        "webpack": "^5.90.1",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^5.0.2"
+    }
+}
