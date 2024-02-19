@@ -24,7 +24,49 @@ import { Renderer } from './renderer';
             color: () => choose(['red', 'green', 'blue', 'yellow']),
             size: 2,
         })
+        // .createComponent('Attraction', { color: 'red', amount: 0.5 })
         .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Drawable')
+
+        // .createSystem('Attractiveness', 'Attraction', 'Position', 'Velocity', 'Drawable', (entity: Entity, { Attraction, Position, Velocity }) => {
+        //     const entities: Entity[] = engine.getEntitiesWithComponents('Drawable', 'Position', { Drawable: { color: Attraction.color } });
+        //     // log('*** attractive entities:', entities);
+
+        //     let fx: number = 0;
+        //     let fy: number = 0;
+
+        //     for (let j: number = 0; j < entities.length; j++) {
+        //         const b = { ...entities[j].components.get('Position') };
+
+        //         let dx: number = Position.x - b.x;
+        //         let dy: number = Position.y - b.y;
+
+        //         let distance: number = Math.sqrt(dx * dx + dy * dy);
+
+        //         if (distance > 0 && distance < 200) {
+        //             const F: number = Attraction.amount * 1 / distance;
+        //             fx += (F * dx);
+        //             fy += (F * dy);
+        //         }
+
+        //         Velocity.x = (Velocity.x + fx) * 0.99;// * engine.clock.deltaTime;
+        //         Velocity.y = (Velocity.y + fy) * 0.99;// * engine.clock.deltaTime;
+
+        //         // if (
+        //         //     (Position.x + Velocity.x) <= this.params.canvasPadding ||
+        //         //     (Position.x + Velocity.x) >= this.canvas.width - this.params.canvasPadding - this.params.particleSize
+        //         // ) {
+        //         //     Velocity.x *= -1;
+        //         // }
+
+        //         // if (
+        //         //     (Position.y + Velocity.y) <= this.params.canvasPadding ||
+        //         //     (Position.y + Velocity.y) >= this.canvas.height - this.params.canvasPadding - this.params.particleSize
+        //         // ) {
+        //         //     Velocity.y *= -1;
+        //         // }
+        //     }
+        // })
+
         .createSystem('Movement', 'Position', 'Velocity', (_, { Boundary, Position, Velocity }) => {
             const targetVelocity = {
                 x: (Velocity.x * Velocity.speed * engine.clock.deltaTime),
@@ -38,7 +80,7 @@ import { Renderer } from './renderer';
 
                 if (Position.y + targetVelocity.y <= 0 || Position.y + targetVelocity.y >= renderer.height) {
                     Velocity.y *= -1;
-            }
+                }
             }
 
             Position.x += (Velocity.x * Velocity.speed * engine.clock.deltaTime);
@@ -78,6 +120,9 @@ import { Renderer } from './renderer';
                 y: randomRange(0, renderer.height),
             });
 
+            // if (entity.components.get('Drawable').color !== 'red' && randomFloat() > 0.5) {
+            //     engine.addComponent(entity.alias, 'Attraction');
+            // }
         })
         .onTickStart(() => {
             renderer.clear();
