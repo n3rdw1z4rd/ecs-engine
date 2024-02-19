@@ -1,30 +1,7 @@
 import { Clock } from './clock';
 import { DEV } from './env';
 import { Logger } from './logger';
-import { uid } from './rng';
-
-/**
- * Testing: type Func = (...args: any[]) => void :
- *  Source:
- *      type Func = (...args: any[]) => void;
- * 
- *      const fmap: Map<string, Func> = new Map<string, Func>();
- * 
- *      fmap.set('test1', (a: number) => console.debug('test1:', a));
- *      fmap.set('test2', (a: number, ...args: any[]) => console.debug('test2:', a, args));
- * 
- *      fmap.get('test1')(12);
- *      fmap.get('test1')(12, 'with extra param');
- *      fmap.get('test2')(76, 'one', 'two', 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 'that last one is the same value used in test1');
- *  Output:
- *      > test1: 12
- *      > index.ts:3 test1: 12
- *      > index.ts:4 test2: 76 (13) ['one', 'two', 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 'that last one is the same value used in test1']
- * 
- *  Unrelated:
- *      // declare type AliasesWithDataCallback<T extends string[]> = (...args: [...T, (data: any) => void]) => void;
- *      this will accept a variable number of string params with the last params always being a callback - pretty cool :)
- */
+import { RNG } from './rng';
 
 const log: Logger = new Logger('[Engine]:');
 
@@ -66,6 +43,8 @@ export class Engine {
         log.traceEnabled = enabled;
     }
 
+    public get rng(): RNG { return RNG.instance; }
+
     public get entities(): Entity[] {
         return [...this._entities.values()];
     }
@@ -89,9 +68,9 @@ export class Engine {
         components.forEach((component: string) => {
             if (!this._defaultComponents.includes(component)) {
                 this._defaultComponents.push(component);
-                log.debug('includeAsDefaultComponents: added as a default:', component);
+                log.debug('includeAsDefaultComponents:', component);
             } else {
-                log.debug('includeAsDefaultComponents: already exists as a default:', component);
+                log.debug('includeAsDefaultComponents: already exists:', component);
             }
         });
 
@@ -132,7 +111,6 @@ export class Engine {
 
             componentList.forEach((component: string) => {
                 if (this._components.has(component)) {
-                    // TODO: check for functions in data values and replace them with their return value
                     const componentData: any = this._components.get(component);
                     const data: any = {};
 
@@ -141,8 +119,6 @@ export class Engine {
 
                         data[alias] = (typeof value === 'function') ? value() : value;
                     }
-
-                    log.debug('data:', data);
 
                     comps.set(component, data);
                 } else {
@@ -165,7 +141,7 @@ export class Engine {
     }
 
     public createEntity(...components: string[]): this {
-        const alias: string = uid();
+        const alias: string = this.rng.uid();
         log.trace('createEntity, calling: createEntityWithAlias:', alias);
         return this.createEntityWithAlias(alias, ...components);
     }
