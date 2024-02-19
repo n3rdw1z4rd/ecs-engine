@@ -1,4 +1,4 @@
-import { XY, XYWH } from './engine';
+import { vec2, vec4 } from 'gl-matrix';
 
 const DEFAULT_LINE_COLOR = 'white';
 const DEFAULT_FILL_COLOR = 'white';
@@ -36,12 +36,12 @@ const DEFAULT_DRAW_PARAMS: DrawParams = {
     padding: 0,
 };
 
-export class Renderer {
+export class CanvasRenderer {
     private _canvas: HTMLCanvasElement;
     private _ctx: CanvasRenderingContext2D;
 
-    private _center: XY = new XY();
-    private _origin: XY = new XY();
+    private _center: vec2 = vec2.create();
+    private _origin: vec2 = vec2.create();
 
     private _fillColor: string | CanvasGradient | CanvasPattern = DEFAULT_FILL_COLOR;
     private _fontName: string = DEFAULT_FONT_NAME;
@@ -57,10 +57,10 @@ export class Renderer {
     get width(): number { return this._canvas.width; }
     get height(): number { return this._canvas.height; }
 
-    get center(): XY { return this._center; }
+    get center(): vec2 { return this._center; }
 
-    get origin(): XY { return this._origin; }
-    set origin(position: XY) { this._origin = position; }
+    get origin(): vec2 { return this._origin; }
+    set origin(position: vec2) { this._origin = position; }
 
     get lineColor(): string | CanvasGradient | CanvasPattern { return this._lineColor; }
     set lineColor(value: string | CanvasGradient | CanvasPattern) {
@@ -176,13 +176,13 @@ export class Renderer {
             this._canvas.width = displayWidth
             this._canvas.height = displayHeight;
 
-            const diff: XY = this._center;
+            const diff: vec2 = this._center;
 
-            this._center.x = displayWidth / 2.0;
-            this._center.y = displayHeight / 2.0;
+            this._center[0] = displayWidth / 2.0;
+            this._center[1] = displayHeight / 2.0;
 
-            // XY.subtract(diff, diff, this._center);
-            // XY.subtract(this._origin, this._origin, diff);
+            // vec2.subtract(diff, diff, this._center);
+            // vec2.subtract(this._origin, this._origin, diff);
 
             this._updateContextStyle();
 
@@ -203,86 +203,86 @@ export class Renderer {
         this._ctx.shadowColor = params.shadowColor ?? this._shadowColor;
     }
 
-    private _applyOrigin(target: XY | XYWH) {
-        target.x += this._origin.x;
-        target.y += this._origin.y;
+    private _applyOrigin(target: vec2 | vec4) {
+        target[0] += this._origin[0];
+        target[1] += this._origin[1];
     }
 
-    drawCircle(position: XY, radius: number, params: DrawParams = DEFAULT_DRAW_PARAMS) {
+    drawCircle(position: vec2, radius: number, params: DrawParams = DEFAULT_DRAW_PARAMS) {
         params = { ...DEFAULT_DRAW_PARAMS, ...params };
 
         this._updateContextStyle(params);
         this._applyOrigin(position);
 
         if (params.centered === false) {
-            position.x += radius;
-            position.y += radius;
+            position[0] += radius;
+            position[1] += radius;
         }
 
         this._ctx.beginPath();
-        this._ctx.arc(position.x, position.y, radius, 0, (Math.PI * 2));
+        this._ctx.arc(position[0], position[1], radius, 0, (Math.PI * 2));
         this._ctx.stroke();
 
         if (params.filled) this._ctx.fill();
     }
 
-    drawPoint(position: XY, params: DrawParams = DEFAULT_DRAW_PARAMS) {
+    drawPoint(position: vec2, params: DrawParams = DEFAULT_DRAW_PARAMS) {
         this.drawCircle(position, 1.0, params);
     }
 
-    drawLine(startPosition: XY, endPosition: XY, params: DrawParams = DEFAULT_DRAW_PARAMS) {
+    drawLine(startPosition: vec2, endPosition: vec2, params: DrawParams = DEFAULT_DRAW_PARAMS) {
         params = { ...DEFAULT_DRAW_PARAMS, ...params };
-        // startPosition = XY.fromValues(startPosition.x, startPosition.y);
-        // endPosition = XY.fromValues(endPosition.x, endPosition.y);
+        // startPosition = vec2.fromValues(startPosition[0], startPosition[1]);
+        // endPosition = vec2.fromValues(endPosition[0], endPosition[1]);
 
         this._updateContextStyle(params);
         this._applyOrigin(startPosition);
         this._applyOrigin(endPosition);
 
         this._ctx.beginPath();
-        this._ctx.moveTo(startPosition.x, startPosition.y);
-        this._ctx.lineTo(endPosition.x, endPosition.y);
+        this._ctx.moveTo(startPosition[0], startPosition[1]);
+        this._ctx.lineTo(endPosition[0], endPosition[1]);
         this._ctx.stroke();
     }
 
-    drawRect(rect: XYWH, params: DrawParams = DEFAULT_DRAW_PARAMS) {
+    drawRect(rect: vec4, params: DrawParams = DEFAULT_DRAW_PARAMS) {
         params = { ...DEFAULT_DRAW_PARAMS, ...params };
 
         this._updateContextStyle(params);
 
         if (params.centered) {
-            rect.x -= (rect.w / 2.0);
-            rect.y -= (rect.h / 2.0);
+            rect[0] -= (rect[2] / 2.0);
+            rect[1] -= (rect[3] / 2.0);
         }
 
-        rect.x += params.padding;
-        rect.y += params.padding;
-        rect.w -= params.padding;
-        rect.h -= params.padding;
+        rect[0] += params.padding;
+        rect[1] += params.padding;
+        rect[2] -= params.padding;
+        rect[3] -= params.padding;
 
         this._applyOrigin(rect);
 
         this._ctx.beginPath();
-        this._ctx.rect(rect.x, rect.y, rect.w, rect.h);
+        this._ctx.rect(rect[0], rect[1], rect[2], rect[3]);
         this._ctx.stroke();
 
         if (params.filled) this._ctx.fill();
     }
 
-    drawText(position: XY, text: string | number, params: DrawParams = DEFAULT_DRAW_PARAMS) {
+    drawText(position: vec2, text: string | number, params: DrawParams = DEFAULT_DRAW_PARAMS) {
         params = { ...DEFAULT_DRAW_PARAMS, ...params };
-        // position = XY.fromValues(position.x, position.y);
+        // position = vec2.fromValues(position[0], position[1]);
 
         this._updateContextStyle(params);
         this._applyOrigin(position);
 
-        // pos.x += params.fontOffset?.x ?? this.style.fontOffset.x;
-        // pos.y += params.fontOffset?.y ?? this.style.fontOffset.y;
+        // pos[0] += params.fontOffset?[0] ?? this.style.fontOffset[0];
+        // pos[1] += params.fontOffset?[1] ?? this.style.fontOffset[1];
 
         this._ctx[(params.outline === true) ? 'strokeText' : 'fillText'](
             `${text}`,
-            position.x,
-            position.y + (this._fontSize / 4.0),
+            position[0],
+            position[1] + (this._fontSize / 4.0),
         );
     }
 
@@ -291,15 +291,15 @@ export class Renderer {
         dstX: number, dstY: number, dstWidth?: number, dstHeight?: number,
         srcX?: number, srcY?: number, srcWidth?: number, srcHeight?: number
     ) {
-        const pos: XY = { x: dstX, y: dstY };
+        const pos: vec2 = vec2.fromValues(dstX, dstY);
         this._applyOrigin(pos);
 
         if (arguments.length > 5) {
-            this._ctx.drawImage(imageSrc, srcX, srcY, srcWidth, srcHeight, pos.x, pos.y, dstWidth, dstHeight);
+            this._ctx.drawImage(imageSrc, srcX, srcY, srcWidth, srcHeight, pos[0], pos[1], dstWidth, dstHeight);
         } else if (arguments.length > 3) {
-            this._ctx.drawImage(imageSrc, pos.x, pos.y, dstWidth, dstHeight);
+            this._ctx.drawImage(imageSrc, pos[0], pos[1], dstWidth, dstHeight);
         } else {
-            this._ctx.drawImage(imageSrc, pos.x, pos.y);
+            this._ctx.drawImage(imageSrc, pos[0], pos[1]);
         }
     }
 }

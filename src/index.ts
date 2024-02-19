@@ -1,11 +1,11 @@
 import './engine/css';
-import { Engine, Entity, XY, log } from './engine';
-import { Renderer } from './renderer';
+import { Engine, Entity, log, CanvasRenderer } from './engine';
+import { vec2 } from 'gl-matrix';
 
 (() => {
     log('*** ecs-engine ***');
 
-    const renderer: Renderer = new Renderer();
+    const renderer: CanvasRenderer = new CanvasRenderer();
     renderer.appendTo(document.body);
 
     const engine: Engine = Engine.instance;
@@ -14,7 +14,10 @@ import { Renderer } from './renderer';
 
     engine
         .createComponent('Boundary')
-        .createComponent('Position', { x: 0, y: 0 })
+        .createComponent('Position', {
+            x: 0,
+            y: 0,
+        })
         .createComponent('Velocity', {
             x: (): number => (engine.rng.nextf * 4 - 2),
             y: (): number => (engine.rng.nextf * 4 - 2),
@@ -46,7 +49,7 @@ import { Renderer } from './renderer';
         })
         .createSystem('Draw', 'Position', 'Drawable', (_, { Attraction, Position, Drawable }) => {
             renderer.drawCircle(
-                new XY(Position.x, Position.y),
+                vec2.fromValues(Position.x, Position.y),
                 Drawable.size,
                 {
                     lineColor: Drawable.color,
@@ -55,14 +58,14 @@ import { Renderer } from './renderer';
             );
 
             // renderer.drawText(
-            //     new XY(Position.x, Position.y + (Drawable.size * 5)),
+            //     vec2.fromValues(Position.x, Position.y + (Drawable.size * 5)),
             //     `${Math.floor(Position.x)}x${Math.floor(Position.y)}`,
             //     { textAlign: 'center', fontSize: 12 },
             // );
 
             if (Attraction) {
                 renderer.drawCircle(
-                    new XY(Position.x, Position.y),
+                    vec2.fromValues(Position.x, Position.y),
                     Drawable.size * 4,
                     {
                         lineColor: Drawable.color,
