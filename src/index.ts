@@ -1,90 +1,87 @@
 import './engine/css';
-import { Clock, Engine, Entity, choose, log, randomFloat, randomRange } from './engine';
-
-type CTX = CanvasRenderingContext2D;
-const DEVICE_PIXEL_RATIO: number = window.devicePixelRatio;
-
-function InitCtx(): CTX {
-    const canvas: HTMLCanvasElement = document.createElement('canvas');
-    const ctx: CTX = canvas.getContext('2d');
-
-    if (!ctx) throw 'failed to init ctx';
-
-    document.body.appendChild(canvas);
-    ResizeCtx(ctx);
-
-    return ctx;
-}
-
-function ResizeCtx(ctx: CTX, displayWidth?: number, displayHeight?: number): void {
-    const { width, height } = (
-        ctx.canvas.parentElement?.getBoundingClientRect() ??
-        ctx.canvas.getBoundingClientRect()
-    );
-
-    displayWidth = (0 | (displayWidth ?? width) * DEVICE_PIXEL_RATIO);
-    displayHeight = (0 | (displayHeight ?? height) * DEVICE_PIXEL_RATIO);
-
-    if (ctx.canvas.width !== displayWidth || ctx.canvas.height !== displayHeight) {
-        ctx.canvas.width = displayWidth
-        ctx.canvas.height = displayHeight;
-    }
-}
+import { Engine, Entity, XY, XYWH, choose, log, randomFloat, randomRange } from './engine';
+import { Renderer } from './renderer';
 
 (() => {
-    log('*** me3 ECS ***');
-    log('*** _ENV:', _ENV);
+    log('*** ecs-engine ***');
 
-    const clock: Clock = new Clock();
-    const ctx: CTX = InitCtx();
-    const eng: Engine = Engine.instance;
+    const renderer: Renderer = new Renderer();
+    renderer.appendTo(document.body);
 
-    eng
+    const engine: Engine = Engine.instance;
+
+    // engine.traceLogEnabled = true;
+
+    engine
+        .createComponent('Boundary')
         .createComponent('Position', { x: 0, y: 0 })
-        .createComponent('Boundary', { minx: 0, miny: 0, maxx: ctx.canvas.width, maxy: ctx.canvas.height })
-        .createComponent('Velocity', { x: 0, y: 0 })
-        .createComponent('Drawable', { color: 'red', size: 4 })
-        .createSystem('Draw', 'Position', 'Drawable', ({ Position, Drawable }) => {
-            ctx.fillStyle = Drawable.color;
-            ctx.fillRect(Position.x, Position.y, Drawable.size, Drawable.size);
+        .createComponent('Velocity', {
+            x: (): number => (randomFloat() * 4 - 2),
+            y: (): number => (randomFloat() * 4 - 2),
+            speed: 32,
         })
-        .createSystem('Movement', 'Position', 'Velocity', ({ Boundary, Position, Velocity }) => {
-            Velocity.x += randomFloat() - 0.5;
-            Velocity.y += randomFloat() - 0.5;
+        .createComponent('Drawable', {
+            color: () => choose(['red', 'green', 'blue', 'yellow']),
+            size: 2,
+        })
+        .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Drawable')
+        .createSystem('Movement', 'Position', 'Velocity', (_, { Boundary, Position, Velocity }) => {
+            const targetVelocity = {
+                x: (Velocity.x * Velocity.speed * engine.clock.deltaTime),
+                y: (Velocity.y * Velocity.speed * engine.clock.deltaTime),
+            };
 
             if (Boundary) {
-                if (
-                    Position.x + Velocity.x <= Boundary.minx ||
-                    Position.x + Velocity.x >= Boundary.maxx
-                ) Velocity.x *= -1;
+                if (Position.x + targetVelocity.x <= 0 || Position.x + targetVelocity.x >= renderer.width) {
+                    Velocity.x *= -1;
+                }
 
-                if (
-                    Position.y + Velocity.y <= Boundary.miny ||
-                    Position.y + Velocity.y >= Boundary.maxy
-                ) Velocity.y *= -1;
+                if (Position.y + targetVelocity.y <= 0 || Position.y + targetVelocity.y >= renderer.height) {
+                    Velocity.y *= -1;
+            }
             }
 
-            const dt: number = eng.getGlobal('deltaTime') as number;
-
-            Position.x += (Velocity.x * dt);
-            Position.y += (Velocity.y * dt);
+            Position.x += (Velocity.x * Velocity.speed * engine.clock.deltaTime);
+            Position.y += (Velocity.y * Velocity.speed * engine.clock.deltaTime);
         })
-        .createEntityWithAlias('Node', 'Position', 'Velocity', 'Drawable', 'Boundary')
-        .duplicateEntity('Node', 999)
+        .createSystem('Draw', 'Position', 'Drawable', (_, { Attraction, Position, Drawable }) => {
+            renderer.drawCircle(
+                new XY(Position.x, Position.y),
+                Drawable.size,
+                {
+                    lineColor: Drawable.color,
+                    fillColor: Drawable.color,
+                }
+            );
+
+            // renderer.drawText(
+            //     new XY(Position.x, Position.y + (Drawable.size * 5)),
+            //     `${Math.floor(Position.x)}x${Math.floor(Position.y)}`,
+            //     { textAlign: 'center', fontSize: 12 },
+            // );
+
+            if (Attraction) {
+                renderer.drawCircle(
+                    new XY(Position.x, Position.y),
+                    Drawable.size * 4,
+                    {
+                        lineColor: Drawable.color,
+                        filled: false,
+                    }
+                );
+            }
+        })
+        .createMultpleEntities(250)
         .onAllEntitiesNow((entity: Entity) => {
             entity.components.set('Position', {
-                x: randomRange(0, ctx.canvas.width),
-                y: randomRange(0, ctx.canvas.height),
+                x: randomRange(0, renderer.width),
+                y: randomRange(0, renderer.height),
             });
 
-            entity.components.set('Drawable', { size: 4, color: choose(['red', 'green', 'blue', 'yellow']) });
         })
-        .beforeSystems((time: number) => {
-            clock.update(time);
-            eng.setGlobal('deltaTime', clock.deltaTime);
-
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ResizeCtx(ctx);
+        .onTickStart(() => {
+            renderer.clear();
+            renderer.resize();
         })
         .run();
 })();

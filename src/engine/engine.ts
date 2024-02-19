@@ -1,3 +1,5 @@
+import { Clock } from './clock';
+import { DEV } from './env';
 import { Logger } from './logger';
 import { uid } from './rng';
 
@@ -26,8 +28,8 @@ import { uid } from './rng';
 
 const log: Logger = new Logger('[Engine]:');
 
-export type SystemCallback = (components: any) => void;
-export type EngineCallback = (...args: any[]) => void;
+export type SystemCallback = (entity: Entity, components: any) => void;
+export type TickCallback = () => void;
 
 export interface System {
     components: string[],
@@ -39,17 +41,36 @@ export interface Entity {
     components: Map<string, any>,
 };
 
+declare global {
+    interface Window { Engine: Engine; }
+}
+
 export class Engine {
     private _globals: Map<string, any> = new Map<string, any>();
     private _entities: Map<string, Entity> = new Map<string, Entity>();
     private _components: Map<string, any> = new Map<string, any>();
+    private _defaultComponents: string[] = [];
     private _systems: Map<string, System> = new Map<string, System>();
-    private _beforeSystems: EngineCallback[] = [];
-    private _afterSystems: EngineCallback[] = [];
+    private _onTickStartCallbacks: TickCallback[] = [];
+    private _onTickEndCallbacks: TickCallback[] = [];
 
-    isRunning: boolean = false;
+    public clock: Clock = new Clock();
+    public isRunning: boolean = false;
 
-    public createComponent(alias: string, data: any): this {
+    public set traceLogEnabled(enabled: boolean) {
+        if (enabled && this.isRunning) {
+            log.warn('traceLogEnabled: stopping Engine while traceLogEnabled is:', enabled);
+            this.isRunning = false;
+        }
+
+        log.traceEnabled = enabled;
+    }
+
+    public get entities(): Entity[] {
+        return [...this._entities.values()];
+    }
+
+    public createComponent(alias: string, data: any = null): this {
         log.trace('createComponent:', { alias, data });
 
         if (!this._components.has(alias)) {
@@ -58,6 +79,21 @@ export class Engine {
         } else {
             log.warn('createComponent: a component already exists with alias:', alias);
         }
+
+        return this;
+    }
+
+    public includeAsDefaultComponents(...components: string[]): this {
+        log.trace('includeAsDefaultComponents:', { components });
+
+        components.forEach((component: string) => {
+            if (!this._defaultComponents.includes(component)) {
+                this._defaultComponents.push(component);
+                log.debug('includeAsDefaultComponents: added as a default:', component);
+            } else {
+                log.debug('includeAsDefaultComponents: already exists as a default:', component);
+            }
+        });
 
         return this;
     }
@@ -86,17 +122,35 @@ export class Engine {
         log.trace('createEntityWithAlias:', { alias, components });
 
         if (!this._entities.has(alias)) {
+            const componentList: string[] = [
+                ...(new Set<string>([
+                    ...this._defaultComponents,
+                    ...components,
+                ]))];
+
             const comps: Map<string, any> = new Map<string, any>();
 
-            components.forEach((component: string) => {
+            componentList.forEach((component: string) => {
                 if (this._components.has(component)) {
-                    comps.set(component, { ...this._components.get(component) });
+                    // TODO: check for functions in data values and replace them with their return value
+                    const componentData: any = this._components.get(component);
+                    const data: any = {};
+
+                    for (const alias in componentData) {
+                        const value = componentData[alias];
+
+                        data[alias] = (typeof value === 'function') ? value() : value;
+                    }
+
+                    log.debug('data:', data);
+
+                    comps.set(component, data);
                 } else {
                     log.warn('createEntityWithAlias: missing component:', component);
                 }
             });
 
-            if (comps.size === components.length) {
+            if (comps.size === componentList.length) {
                 const entity: Entity = { alias, components: comps };
                 this._entities.set(alias, entity);
                 log.debug('created entity:', entity);
@@ -116,6 +170,65 @@ export class Engine {
         return this.createEntityWithAlias(alias, ...components);
     }
 
+    public createMultpleEntities(count: number, ...components: string[]): this {
+        log.trace('createMultpleEntities:', { count, components });
+
+        for (; count > 0; count--) {
+            this.createEntity(...components);
+        }
+
+        return this;
+    }
+
+    public getEntitiesWithComponents<T extends string[]>(...components: [...T, filter: any]): Entity[] {
+        const filter: any = components.pop() as any;
+        const aliases: string[] = components.filter((component: any) => typeof component === 'string');
+
+        const entities: Entity[] = []
+
+        this._entities.forEach((entity: Entity) => {
+            if (aliases.every((component: string) =>
+                [...entity.components.keys()].includes(component)
+            )) {
+                let add: boolean = true;
+
+                for (const filterComponent in filter) {
+                    for (const filterKey in filter[filterComponent]) {
+                        const entityValue = entity.components.get(filterComponent)[filterKey];
+                        const filterValue = filter[filterComponent][filterKey];
+                        // log.debug({ entityValue, filterValue }, (entityValue === filterValue));
+                        if (entityValue === filterValue) {
+                            entities.push(entity);
+                        }
+                    }
+                }
+
+                // entities.push(entity);
+            }
+        });
+
+        return entities;
+    }
+
+    public addComponent(alias: string, component: string): this {
+        log.trace('addComponent:', { alias, component });
+
+        const entity: Entity = this._entities.get(alias);
+
+        if (entity) {
+            if (this._components.has(component)) {
+                entity.components.set(component, this._components.get(component));
+                log.debug('addComponent: added component:', component, 'to entity:', alias);
+            } else {
+                log.warn('addComponent: component not found:', component);
+            }
+        } else {
+            log.warn('addComponent: entity not found:', alias);
+        }
+
+        return this;
+    }
+
     public onAllEntitiesNow(callback: (entit: Entity) => void): this {
         log.trace('onAllEntitiesNow:', { callback });
 
@@ -125,7 +238,7 @@ export class Engine {
         return this;
     }
 
-    public duplicateEntity(alias: string, count: number, deep: boolean = false): this {
+    public duplicateEntity(alias: string, count: number = 1, deep: boolean = false): this {
         log.trace('duplicateEntity:', { alias, count, deep });
 
         const zero: Entity = this._entities.get(alias);
@@ -156,20 +269,20 @@ export class Engine {
         return this;
     }
 
-    public beforeSystems(callback: EngineCallback): this {
-        log.trace('beforeSystems:', { callback });
+    public onTickStart(callback: TickCallback): this {
+        log.trace('onTickStart:', { callback });
 
-        this._beforeSystems.push(callback);
-        log.debug('beforeSystems: added:', callback);
+        this._onTickStartCallbacks.push(callback);
+        log.debug('onTickStart: added:', callback);
 
         return this;
     }
 
-    public afterSystems(callback: EngineCallback): this {
-        log.trace('afterSystems:', { callback });
+    public onTickEnd(callback: TickCallback): this {
+        log.trace('onTickEnd:', { callback });
 
-        this._afterSystems.push(callback);
-        log.debug('afterSystems: added:', callback);
+        this._onTickEndCallbacks.push(callback);
+        log.debug('onTickEnd: added:', callback);
 
         return this;
     }
@@ -184,15 +297,7 @@ export class Engine {
                 if (system.components.every((component: string) =>
                     [...entity.components.keys()].includes(component)
                 )) {
-                    const components: any = {};
-
-                    entity.components.forEach((component: any, alias: string) => {
-                        components[alias] = component;
-                    });
-
-                    system.callback(components);
-                } else {
-                    log.debug(entity.alias, 'does NOT have all components', system.components);
+                    system.callback(entity, Object.fromEntries(entity.components));
                 }
             });
         } else {
@@ -202,43 +307,44 @@ export class Engine {
         return this;
     }
 
-    private _animate(time: number) {
-        this._beforeSystems.forEach((cb: EngineCallback) => cb(time));
-        this._systems.forEach((system: System, alias: string) => this.runSystem(alias));
-        this._afterSystems.forEach((cb: EngineCallback) => cb(time));
+    private _tick(time: number) {
+        this.clock.update(time);
+
+        this._onTickStartCallbacks.forEach((cb: TickCallback) => cb());
+        this._systems.forEach((_: System, alias: string) => this.runSystem(alias));
+        this._onTickEndCallbacks.forEach((cb: TickCallback) => cb());
 
         if (this.isRunning) {
-            requestAnimationFrame(this._animate.bind(this));
+            requestAnimationFrame(this._tick.bind(this));
         }
-    }
-
-    public runOnce(): this {
-        log.trace('runOnce');
-
-        if (!this.isRunning) {
-            requestAnimationFrame(this._animate.bind(this));
-            log.debug('********************');
-            log.debug('run: ran engine once');
-            log.debug('********************');
-        } else {
-            log.warn('runOnce: engine already running');
-        }
-
-        return this;
     }
 
     public run(): this {
         log.trace('run');
 
         if (!this.isRunning) {
-            this.isRunning = true;
-            requestAnimationFrame(this._animate.bind(this));
-
-            log.debug('**********************');
-            log.debug('run: engine is running');
-            log.debug('**********************');
+            if (!log.traceEnabled) {
+                this.isRunning = true;
+                log.debug('run: running Engine...');
+                requestAnimationFrame(this._tick.bind(this));
+            } else {
+                log.warn('run: cannot run when traceLogEnabled is true');
+            }
         } else {
             log.warn('run: already running');
+        }
+
+        return this;
+    }
+
+    public runOnce(): this {
+        log.trace('runOnce');
+
+        if (!this.isRunning) {
+            log.debug('runOnce: running Engine ONCE');
+            requestAnimationFrame(this._tick.bind(this));
+        } else {
+            log.warn('runOnce: already running');
         }
 
         return this;
@@ -252,6 +358,10 @@ export class Engine {
     public static get instance(): Engine {
         if (!Engine._instance) {
             Engine._instance = new Engine();
+
+            if (DEV) {
+                window.Engine = Engine._instance;
+            }
         }
 
         return Engine._instance;
