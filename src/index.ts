@@ -1,5 +1,5 @@
 import './engine/css';
-import { Engine, Entity, XY, XYWH, choose, log, randomFloat, randomRange } from './engine';
+import { Engine, Entity, XY, log } from './engine';
 import { Renderer } from './renderer';
 
 (() => {
@@ -16,12 +16,12 @@ import { Renderer } from './renderer';
         .createComponent('Boundary')
         .createComponent('Position', { x: 0, y: 0 })
         .createComponent('Velocity', {
-            x: (): number => (randomFloat() * 4 - 2),
-            y: (): number => (randomFloat() * 4 - 2),
+            x: (): number => (engine.rng.nextf * 4 - 2),
+            y: (): number => (engine.rng.nextf * 4 - 2),
             speed: 32,
         })
         .createComponent('Drawable', {
-            color: () => choose(['red', 'green', 'blue', 'yellow']),
+            color: () => engine.rng.choose(['red', 'green', 'blue', 'yellow']),
             size: 2,
         })
         .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Drawable')
@@ -38,7 +38,7 @@ import { Renderer } from './renderer';
 
                 if (Position.y + targetVelocity.y <= 0 || Position.y + targetVelocity.y >= renderer.height) {
                     Velocity.y *= -1;
-            }
+                }
             }
 
             Position.x += (Velocity.x * Velocity.speed * engine.clock.deltaTime);
@@ -74,8 +74,8 @@ import { Renderer } from './renderer';
         .createMultpleEntities(250)
         .onAllEntitiesNow((entity: Entity) => {
             entity.components.set('Position', {
-                x: randomRange(0, renderer.width),
-                y: randomRange(0, renderer.height),
+                x: engine.rng.rangei(0, renderer.width),
+                y: engine.rng.rangei(0, renderer.height),
             });
 
         })

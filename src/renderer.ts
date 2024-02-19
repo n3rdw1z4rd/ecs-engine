@@ -1,4 +1,4 @@
-import { PI_X2, XY, XYWH } from './engine';
+import { XY, XYWH } from './engine';
 
 const DEFAULT_LINE_COLOR = 'white';
 const DEFAULT_FILL_COLOR = 'white';
@@ -220,7 +220,7 @@ export class Renderer {
         }
 
         this._ctx.beginPath();
-        this._ctx.arc(position.x, position.y, radius, 0, PI_X2);
+        this._ctx.arc(position.x, position.y, radius, 0, (Math.PI * 2));
         this._ctx.stroke();
 
         if (params.filled) this._ctx.fill();
