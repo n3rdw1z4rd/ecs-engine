@@ -1,10 +1,9 @@
 import './engine/css';
-import { CanvasRenderer, Engine, Entity, WebGLRenderer } from './engine';
+import { CanvasRenderer, Engine, Entity } from './engine';
 import { vec2 } from 'gl-matrix';
 
 (async () => {
-    const renderer: WebGLRenderer = new WebGLRenderer();
-    // const renderer: CanvasRenderer = new CanvasRenderer();
+    const renderer: CanvasRenderer = new CanvasRenderer();
     renderer.appendTo(document.body);
 
     const stats: HTMLDivElement = document.createElement('div');
@@ -66,11 +65,10 @@ import { vec2 } from 'gl-matrix';
             // );
 
             if (Attraction) {
-                renderer.drawRect(vec2.fromValues(Position.x, Position.y), Attributes.color, Attributes.size * 4, false);
+                renderer.drawCircle(vec2.fromValues(Position.x, Position.y), Attributes.color, Attributes.size * 4, false);
             }
         })
-        // .createEntity()
-        .createMultpleEntities(50)
+        .createMultpleEntities(500)
         .onAllEntitiesNow((entity: Entity) => {
             if (engine.rng.nextf < 0.1) {
                 entity.components.get('Attributes').type = 'Different';

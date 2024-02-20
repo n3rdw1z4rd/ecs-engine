@@ -10,7 +10,6 @@ export class WebGLRenderer {
     private program: WebGLProgram;
     private pixelBuffer: Uint8Array;
     private buffer: WebGLBuffer;
-    private colorLocation: WebGLUniformLocation;
     private texture: WebGLTexture;
 
     public get width(): number { return this.canvas.width; }
@@ -123,11 +122,30 @@ export class WebGLRenderer {
 
         this.gl.useProgram(this.program);
 
-        // Get the location of the color uniform
-        this.colorLocation = this.gl.getUniformLocation(this.program, 'u_color'); // Add this line
-
         // Initialize the buffer
         this.buffer = this.gl.createBuffer();
+
+        // Define quad vertices
+        const vertices = [
+            -1, 1,
+            1, 1,
+            -1, -1,
+            -1, -1,
+            1, 1,
+            1, -1
+        ];
+
+        // Bind the buffer and upload the vertices to it
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+
+        // Bind the buffer
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+
+        // Set vertex attribute pointer
+        const positionLocation = this.gl.getAttribLocation(this.program, 'position');
+        this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+        this.gl.enableVertexAttribArray(positionLocation);
     }
 
     private createShader(type: number, source: string): WebGLShader {
@@ -212,27 +230,6 @@ export class WebGLRenderer {
         // Update texture
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.canvas.width, this.canvas.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.pixelBuffer);
-
-        // Bind the buffer
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
-
-        // Define quad vertices
-        const vertices = [
-            -1, 1,
-            1, 1,
-            -1, -1,
-            -1, -1,
-            1, 1,
-            1, -1
-        ];
-
-        // Set vertex attribute pointer
-        const positionLocation = this.gl.getAttribLocation(this.program, 'position');
-        this.gl.vertexAttribPointer(positionLocation, 2, this.gl.FLOAT, false, 0, 0);
-        this.gl.enableVertexAttribArray(positionLocation);
-
-        // Provide vertices to WebGL
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
 
         // Clear canvas and draw the quad
         this.gl.clearColor(0, 0, 0, 1);
