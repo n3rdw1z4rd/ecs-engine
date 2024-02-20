@@ -9,6 +9,9 @@ export class WebGLRenderer {
     private gl: WebGL2RenderingContext;
     private program: WebGLProgram;
     private pixelBuffer: Uint8Array;
+    private buffer: WebGLBuffer;
+    private colorLocation: WebGLUniformLocation;
+    private texture: WebGLTexture;
 
     public get width(): number { return this.canvas.width; }
     public get height(): number { return this.canvas.height; }
@@ -25,6 +28,12 @@ export class WebGLRenderer {
 
         this.initProgram();
         this.initPixelBuffer();
+
+        // Create texture
+        this.texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
     }
 
     public clear() {
@@ -93,6 +102,7 @@ export class WebGLRenderer {
             precision mediump float;
             uniform sampler2D u_texture;
             uniform vec2 u_resolution;
+            uniform vec4 u_color;
             void main() {
                 gl_FragColor = texture2D(u_texture, gl_FragCoord.xy / u_resolution);
             }
@@ -112,6 +122,12 @@ export class WebGLRenderer {
         }
 
         this.gl.useProgram(this.program);
+
+        // Get the location of the color uniform
+        this.colorLocation = this.gl.getUniformLocation(this.program, 'u_color'); // Add this line
+
+        // Initialize the buffer
+        this.buffer = this.gl.createBuffer();
     }
 
     private createShader(type: number, source: string): WebGLShader {
@@ -175,52 +191,13 @@ export class WebGLRenderer {
                 for (let x = startX; x < endX; x++) {
                     if (filled) {
                         this._setPixel(x, y, color);
-                    } else if (x === startX || x === endX - 1 || y === startY || y === endY - 1) {
-                        this._setPixel(x, y, color);
+                    } else {
+                        if (x === startX || x === endX - 1 || y === startY || y === endY - 1) {
+                            this._setPixel(x, y, color);
+                        }
                     }
                 }
             }
-        }
-    }
-
-    public drawCircle(position: vec2, color: Color, radius: number = 1, filled: boolean = true): void {
-        log.trace('drawCircle', { center: position, color, radius, filled });
-
-        const segments: number = 36;
-        const vertices: number[] = [];
-        const indices: number[] = [];
-
-        // Generate vertices and indices
-        for (let i = 0; i <= segments; ++i) {
-            const theta = (i / segments) * 2 * Math.PI;
-            const x = radius * Math.cos(theta) + position[0];
-            const y = radius * Math.sin(theta) + position[1];
-
-            vertices.push(x, y);
-
-            if (i > 0 && i < segments) {
-                indices.push(0, i, i + 1);
-            }
-        }
-
-        // Create a buffer for the circle's vertices.
-        const vertexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-
-        // Create a buffer for the circle's indices.
-        const indexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
-
-        // Set the color
-        this.gl.uniform4f(this.colorLocation, color[0], color[1], color[2], color[3]);
-
-        // Draw the circle
-        if (filled) {
-            this.gl.drawElements(this.gl.TRIANGLES, indices.length, this.gl.UNSIGNED_SHORT, 0);
-        } else {
-            this.gl.drawArrays(this.gl.LINE_LOOP, 1, vertices.length / 2 - 1);
         }
     }
 
@@ -232,18 +209,12 @@ export class WebGLRenderer {
 
         this.gl.useProgram(this.program);
 
-        // Convert pixel buffer to texture
-        const texture = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-
+        // Update texture
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.canvas.width, this.canvas.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.pixelBuffer);
 
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-
-        // Create buffer and bind it
-        const buffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        // Bind the buffer
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
 
         // Define quad vertices
         const vertices = [
@@ -276,9 +247,5 @@ export class WebGLRenderer {
         this.gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height);  // Set resolution to canvas size
 
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-
-        if (this.gl.getError() !== this.gl.NO_ERROR) {
-            throw new Error('An error occurred while creating the texture');
-        }
     }
 }
