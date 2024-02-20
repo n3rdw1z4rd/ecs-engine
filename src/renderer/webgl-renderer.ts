@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix';
-import { Logger } from '..';
 import { Color } from './types';
+import { Logger } from '../engine';
 
 const log: Logger = new Logger('[WebGLRenderer]');
 

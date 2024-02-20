@@ -1,5 +1,6 @@
 import './engine/css';
-import { CanvasRenderer, Engine, Entity } from './engine';
+import { CanvasRenderer } from './renderer';
+import { Engine, Entity } from './engine';
 import { vec2 } from 'gl-matrix';
 
 (async () => {
@@ -82,9 +83,7 @@ import { vec2 } from 'gl-matrix';
             renderer.resize();
         })
         .onTickEnd(() => {
-            renderer.render();
             stats.innerText = `FPS: ${engine.clock.fps}`;
         })
-        .run()
-    // .runOnce()
+        .run();
 })();

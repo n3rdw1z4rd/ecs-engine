@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix';
-import { Logger } from '..';
+import { Logger } from '../engine';
 import { Color } from './types';
 
 const log: Logger = new Logger('[Canvas2DRenderer]');
@@ -94,12 +94,5 @@ export class CanvasRenderer {
         } else {
             this.ctx.stroke();
         }
-    }
-
-    public render(): void {
-        log.trace('render');
-
-        // In a 2D canvas context, the render method doesn't need to do anything,
-        // because all drawing operations are immediately visible on the canvas.
     }
 }
