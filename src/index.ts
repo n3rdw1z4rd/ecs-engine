@@ -1,33 +1,41 @@
 import './engine/css';
-import { Engine, Entity, log, CanvasRenderer } from './engine';
+import { CanvasRenderer, Engine, Entity } from './engine';
 import { vec2 } from 'gl-matrix';
 
-(() => {
-    log('*** ecs-engine ***');
-
+(async () => {
     const renderer: CanvasRenderer = new CanvasRenderer();
     renderer.appendTo(document.body);
+
+    const stats: HTMLDivElement = document.createElement('div');
+    stats.classList.add('stats');
+    document.body.appendChild(stats);
 
     const engine: Engine = Engine.instance;
 
     // engine.traceLogEnabled = true;
 
     engine
+        .setAppTitle('ECS Engine')
         .createComponent('Boundary')
         .createComponent('Position', {
-            x: 0,
-            y: 0,
+            x: () => engine.rng.rangei(0, renderer.width),
+            y: () => engine.rng.rangei(0, renderer.height),
         })
         .createComponent('Velocity', {
             x: (): number => (engine.rng.nextf * 4 - 2),
             y: (): number => (engine.rng.nextf * 4 - 2),
             speed: 32,
         })
-        .createComponent('Drawable', {
-            color: () => engine.rng.choose(['red', 'green', 'blue', 'yellow']),
+        .createComponent('Attributes', {
+            type: 'normal',
+            color: [255, 255, 0, 255],
             size: 2,
         })
-        .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Drawable')
+        .createComponent('Attraction', {
+            type: 'normal',
+            force: -0.1,
+        })
+        .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Attributes')
         .createSystem('Movement', 'Position', 'Velocity', (_, { Boundary, Position, Velocity }) => {
             const targetVelocity = {
                 x: (Velocity.x * Velocity.speed * engine.clock.deltaTime),
@@ -47,44 +55,36 @@ import { vec2 } from 'gl-matrix';
             Position.x += (Velocity.x * Velocity.speed * engine.clock.deltaTime);
             Position.y += (Velocity.y * Velocity.speed * engine.clock.deltaTime);
         })
-        .createSystem('Draw', 'Position', 'Drawable', (_, { Attraction, Position, Drawable }) => {
-            renderer.drawCircle(
-                vec2.fromValues(Position.x, Position.y),
-                Drawable.size,
-                {
-                    lineColor: Drawable.color,
-                    fillColor: Drawable.color,
-                }
-            );
+        .createSystem('Draw', 'Position', 'Attributes', (_, { Attraction, Position, Attributes }) => {
+            renderer.drawRect(vec2.fromValues(Position.x, Position.y), Attributes.color, Attributes.size);
 
             // renderer.drawText(
-            //     vec2.fromValues(Position.x, Position.y + (Drawable.size * 5)),
+            //     vec2.fromValues(Position.x, Position.y + (Attributes.size * 5)),
             //     `${Math.floor(Position.x)}x${Math.floor(Position.y)}`,
             //     { textAlign: 'center', fontSize: 12 },
             // );
 
             if (Attraction) {
-                renderer.drawCircle(
-                    vec2.fromValues(Position.x, Position.y),
-                    Drawable.size * 4,
-                    {
-                        lineColor: Drawable.color,
-                        filled: false,
-                    }
-                );
+                renderer.drawCircle(vec2.fromValues(Position.x, Position.y), Attributes.color, Attributes.size * 4, false);
             }
         })
-        .createMultpleEntities(250)
+        .createMultpleEntities(500)
         .onAllEntitiesNow((entity: Entity) => {
-            entity.components.set('Position', {
-                x: engine.rng.rangei(0, renderer.width),
-                y: engine.rng.rangei(0, renderer.height),
-            });
-
+            if (engine.rng.nextf < 0.1) {
+                entity.components.get('Attributes').type = 'Different';
+                entity.components.get('Attributes').color = [255, 0, 0, 255];
+                engine.addComponent(entity.alias, 'Attraction');
+                engine.log.debug('Added Attraction component to entity', entity.alias);
+            }
         })
         .onTickStart(() => {
             renderer.clear();
             renderer.resize();
         })
-        .run();
+        .onTickEnd(() => {
+            renderer.render();
+            stats.innerText = `FPS: ${engine.clock.fps}`;
+        })
+        .run()
+    // .runOnce()
 })();

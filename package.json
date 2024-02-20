@@ -23,6 +23,7 @@
         "html-webpack-plugin": "^5.6.0",
         "style-loader": "^3.3.4",
         "ts-loader": "^9.5.1",
+        "ts-shader-loader": "^2.0.2",
         "typescript": "^5.3.3",
         "webpack": "^5.90.1",
         "webpack-cli": "^5.1.4",
