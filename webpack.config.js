@@ -30,12 +30,16 @@ module.exports = {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
+            {
+                test: /\.(glsl|vert|frag)$/,
+                use: ['ts-shader-loader'],
+            },
         ],
     },
     devServer: {
         host: '0.0.0.0',
         port: 3000,
-        // static: resolve(__dirname, 'public'),
+        static: resolve(__dirname, 'public'),
         hot: true,
         devMiddleware: {
             publicPath: '/',

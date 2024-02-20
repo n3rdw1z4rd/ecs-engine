@@ -16,15 +16,20 @@
         "url": "git@github.com:JohnCWakley/ecs-engine.git"
     },
     "devDependencies": {
+        "@types/gl-matrix": "^3.2.0",
         "@types/node": "^20.11.16",
         "cross-env": "^7.0.3",
         "css-loader": "^6.10.0",
         "html-webpack-plugin": "^5.6.0",
         "style-loader": "^3.3.4",
         "ts-loader": "^9.5.1",
+        "ts-shader-loader": "^2.0.2",
         "typescript": "^5.3.3",
         "webpack": "^5.90.1",
         "webpack-cli": "^5.1.4",
         "webpack-dev-server": "^5.0.2"
+    },
+    "dependencies": {
+        "gl-matrix": "^3.4.3"
     }
 }
