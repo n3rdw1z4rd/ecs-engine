@@ -1,5 +1,6 @@
 import './engine/css';
-import { CanvasRenderer, Engine, Entity } from './engine';
+import { CanvasRenderer } from './renderer';
+import { Engine, Entity } from './engine';
 import { vec2 } from 'gl-matrix';
 
 (async () => {

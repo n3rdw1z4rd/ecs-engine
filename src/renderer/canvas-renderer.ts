@@ -1,5 +1,5 @@
 import { vec2 } from 'gl-matrix';
-import { Logger } from '..';
+import { Logger } from '../engine';
 import { Color } from './types';
 
 const log: Logger = new Logger('[Canvas2DRenderer]');
