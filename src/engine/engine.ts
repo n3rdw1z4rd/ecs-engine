@@ -3,7 +3,7 @@ import { DEV } from './env';
 import { Logger } from './logger';
 import { RNG } from './rng';
 
-const log: Logger = new Logger('[Engine]:');
+const log: Logger = new Logger('[Engine]');
 
 export type SystemCallback = (entity: Entity, components: any) => void;
 export type TickCallback = () => void;
@@ -43,10 +43,20 @@ export class Engine {
         log.traceEnabled = enabled;
     }
 
+    public get log(): Logger { return log; }
+
     public get rng(): RNG { return RNG.instance; }
 
     public get entities(): Entity[] {
         return [...this._entities.values()];
+    }
+
+    public setAppTitle(title: string): this {
+        log.trace('setAppTitle:', { title });
+
+        log.info(`*** ${title} ***`);
+        document.title = title;
+        return this;
     }
 
     public createComponent(alias: string, data: any = null): this {
@@ -344,5 +354,8 @@ export class Engine {
     }
 
     private static _instance: Engine;
-    private constructor() { }
+
+    private constructor() {
+        log.trace('instance created');
+    }
 }
