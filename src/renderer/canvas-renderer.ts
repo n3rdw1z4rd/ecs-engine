@@ -95,11 +95,4 @@ export class CanvasRenderer {
             this.ctx.stroke();
         }
     }
-
-    public render(): void {
-        log.trace('render');
-
-        // In a 2D canvas context, the render method doesn't need to do anything,
-        // because all drawing operations are immediately visible on the canvas.
-    }
 }

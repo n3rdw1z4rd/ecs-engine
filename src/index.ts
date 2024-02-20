@@ -83,9 +83,7 @@ import { vec2 } from 'gl-matrix';
             renderer.resize();
         })
         .onTickEnd(() => {
-            renderer.render();
             stats.innerText = `FPS: ${engine.clock.fps}`;
         })
-        .run()
-    // .runOnce()
+        .run();
 })();
