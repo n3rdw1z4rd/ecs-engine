@@ -1,9 +1,13 @@
 import { CanvasRenderer } from './canvas-renderer';
 import { Engine, Entity } from '../ecs-engine';
+import { StatsDiv } from './stats-div';
+
 
 (async () => {
     const renderer: CanvasRenderer = new CanvasRenderer();
     renderer.appendTo(document.body);
+
+    const statsDiv: StatsDiv = new StatsDiv('attraction test');
 
     const stats: HTMLDivElement = document.createElement('div');
     stats.classList.add('stats');
@@ -26,7 +30,7 @@ import { Engine, Entity } from '../ecs-engine';
         })
         .createComponent('Attributes', {
             type: 'normal',
-            color: [255, 255, 0, 255],
+            color: 'yellow',
             size: 2,
         })
         .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Attributes')
@@ -49,6 +53,8 @@ import { Engine, Entity } from '../ecs-engine';
 
                 if (entities.length > 0) {
                     entity.components.get('Attraction').other = entities[0].entity.alias;
+                    entities[0].entity.components.get('Attributes').color = 'lime';
+                    entities[0].entity.components.get('Attributes').size = 4;
                 }
             } else {
                 const other: Entity = engine.getEntity(Attraction.other);
@@ -65,6 +71,8 @@ import { Engine, Entity } from '../ecs-engine';
                     Velocity.y += ((F * dy) * engine.clock.deltaTime);
                 } else {
                     entity.components.get('Attraction').other = null;
+                    other.components.get('Attributes').color = 'yellow';
+                    other.components.get('Attributes').size = 2;
                 }
             }
         })
@@ -106,7 +114,7 @@ import { Engine, Entity } from '../ecs-engine';
         // .onAllEntitiesNow((entity: Entity) => {
         //     if (engine.rng.nextf < 0.1) {
         //         entity.components.get('Attributes').type = 'other';
-        //         entity.components.get('Attributes').color = [255, 0, 0, 255];
+        //         entity.components.get('Attributes').color = 'red';
         //         engine.addComponent(entity.alias, 'Attraction');
         //         entity.components.set('Velocity', { x: 0, y: 0, speed: 32 });
         //     }
@@ -116,10 +124,10 @@ import { Engine, Entity } from '../ecs-engine';
             renderer.resize();
         })
         .afterTick(() => {
-            stats.innerText = `FPS: ${engine.clock.fps}`;
+            statsDiv.update(engine);
         })
         .onBeforeRun(() => {
-            engine.getEntity('player').components.set('Attributes', { type: 'other', color: [255, 0, 0, 255], size: 2 });
+            engine.getEntity('player').components.set('Attributes', { type: 'other', color: 'red', size: 2 });
             engine.getEntity('player').components.set('Velocity', { x: 0, y: 0, speed: 32 });
             // engine.duplicateEntity('player', 2);
         })
