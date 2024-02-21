@@ -58,6 +58,7 @@ engine
 ```
 
 ### Building/Running:
+* Install Dependencies: `$ npm install`
 * Build (`PRODUCTION`): `$ npm run build`
 * Run (`DEVELOPMENT`): `$ npm run dev`
     * Then simply open a broswer tab to `http://localhost:3000` and enjoy!
