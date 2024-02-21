@@ -1,5 +1,5 @@
-import { CanvasRenderer } from './canvas-renderer';
-import { Engine, Entity } from './engine';
+import { CanvasRenderer } from './helpers/canvas-renderer';
+import { Engine, Entity } from './ecs-engine';
 
 document.title = 'ecs-engine';
 

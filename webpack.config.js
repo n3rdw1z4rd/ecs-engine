@@ -1,6 +1,5 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { DefinePlugin } = require('webpack');
 
 const DEV = (process.env.NODE_ENV?.toLowerCase() !== 'production');
 const ENV = DEV ? 'development' : 'production';
@@ -47,6 +46,5 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({ inject: true }),
-        new DefinePlugin({ _ENV: JSON.stringify(ENV), }),
     ],
 };
