@@ -64,5 +64,8 @@ engine
     * Then simply open a broswer tab to `http://localhost:3000` and enjoy!
     * Open DevTools console to checkout the Engine logs
 
+### Screenshot: 
+![image](https://github.com/JohnCWakley/ecs-engine/assets/33690133/d6e07110-33f6-4b87-a569-6239e540affe)
+
 ### TODO:
-Make this into an npm module when ready.
+Optimize and make this into an npm module when ready.
