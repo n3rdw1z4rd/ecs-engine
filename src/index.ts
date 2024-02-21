@@ -1,21 +1,11 @@
 import { CanvasRenderer } from './helpers/canvas-renderer';
 import { Engine, Entity } from './ecs-engine';
-
-document.title = 'ecs-engine';
+import { StatsDiv } from './helpers/stats-div';
 
 const renderer: CanvasRenderer = new CanvasRenderer();
 renderer.appendTo(document.body);
 
-const statsDiv: HTMLDivElement = document.createElement('div');
-statsDiv.style.setProperty('position', 'absolute');
-statsDiv.style.setProperty('top', '0');
-statsDiv.style.setProperty('right', '0');
-statsDiv.style.setProperty('color', 'white');
-statsDiv.style.setProperty('background-color', 'black');
-statsDiv.style.setProperty('padding', '16px');
-statsDiv.style.setProperty('font-size', '1.2rem');
-statsDiv.style.setProperty('z-index', '100');
-document.body.appendChild(statsDiv);
+const statsDiv: StatsDiv = new StatsDiv();
 
 const engine: Engine = Engine.instance;
 
@@ -57,11 +47,6 @@ engine
         renderer.resize();
     })
     .afterTick(() => {
-        statsDiv.innerHTML = [
-            `Components: ${engine.components.length}`,
-            `Systems: ${engine.systems.length}`,
-            `Entities: ${engine.entities.length}`,
-            `FPS: ${engine.clock.fps}`,
-        ].join('<br>');
+        statsDiv.update(engine);
     })
     .run();
