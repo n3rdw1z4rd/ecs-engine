@@ -1,5 +1,5 @@
 import { CanvasRenderer } from './canvas-renderer';
-import { Engine, Entity } from './engine';
+import { Engine, Entity } from '../ecs-engine';
 
 (async () => {
     const renderer: CanvasRenderer = new CanvasRenderer();

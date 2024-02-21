@@ -1,5 +1,4 @@
 import { Clock } from './clock';
-import { DEV } from './env';
 import { Logger } from './logger';
 import { RNG } from './rng';
 
@@ -363,7 +362,7 @@ export class Engine {
         if (!Engine._instance) {
             Engine._instance = new Engine();
 
-            if (DEV) {
+            if (process.env.NODE_ENV?.toLowerCase() !== 'production') {
                 window.Engine = Engine._instance;
             }
         }

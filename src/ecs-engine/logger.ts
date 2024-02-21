@@ -1,6 +1,6 @@
-import { DEV } from './env';
+const isDev: boolean = (process.env.NODE_ENV?.toLowerCase() !== 'production');
 
-export const log = DEV ? console.debug : () => { };
+export const log = isDev ? console.debug : () => { };
 export const logInfo = console.info;
 export const logWarn = console.warn;
 export const logError = console.error;
@@ -21,7 +21,7 @@ export class Logger {
     }
 
     debug(...args: any[]) {
-        if (DEV) log(this.prefix, ...args);
+        if (isDev) log(this.prefix, ...args);
     }
 
     info(...args: any[]) {
