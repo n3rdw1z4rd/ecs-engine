@@ -32,48 +32,45 @@ import { vec2 } from 'gl-matrix';
             color: [255, 255, 0, 255],
             size: 2,
         })
-        // .createComponent('Attraction', { color: 'red', amount: 0.5 })
-        .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Drawable')
+        .includeAsDefaultComponents('Boundary', 'Position', 'Velocity', 'Attributes')
 
-        // .createSystem('Attractiveness', 'Attraction', 'Position', 'Velocity', 'Drawable', (entity: Entity, { Attraction, Position, Velocity }) => {
-        //     const entities: Entity[] = engine.getEntitiesWithComponents('Drawable', 'Position', { Drawable: { color: Attraction.color } });
-        //     // log('*** attractive entities:', entities);
+        .createComponent('Attraction', { type: 'normal', range: 100, force: -2, other: null })
+        .createSystem('Attractiveness', 'Attraction', 'Position', 'Velocity', 'Attributes', (entity: Entity, { Attraction, Position, Velocity }) => {
+            if (!Attraction.other) {
+                const entities: { entity: Entity, distance: number, dx: number, dy: number }[] = [];
 
-        //     let fx: number = 0;
-        //     let fy: number = 0;
+                engine.getEntitiesWithComponents('Attributes', 'Position', { Attributes: { type: 'normal' } }).forEach((e: Entity) => {
+                    const b = { ...e.components.get('Position') };
+                    const dx: number = Position.x - b.x;
+                    const dy: number = Position.y - b.y;
+                    const distance: number = Math.sqrt(dx * dx + dy * dy);
 
-        //     for (let j: number = 0; j < entities.length; j++) {
-        //         const b = { ...entities[j].components.get('Position') };
+                    if (distance > 0 && distance < Attraction.range) {
+                        entities.push({ entity: e, distance, dx, dy });
+                    }
+                });
 
-        //         let dx: number = Position.x - b.x;
-        //         let dy: number = Position.y - b.y;
+                if (entities.length > 0) {
+                    entity.components.get('Attraction').other = entities[0].entity.alias;
+                }
+            } else {
+                const other: Entity = engine.getEntity(Attraction.other);
+                const otherPosition = other.components.get('Position');
 
-        //         let distance: number = Math.sqrt(dx * dx + dy * dy);
+                let dx: number = Position.x - otherPosition.x;
+                let dy: number = Position.y - otherPosition.y;
 
-        //         if (distance > 0 && distance < 200) {
-        //             const F: number = Attraction.amount * 1 / distance;
-        //             fx += (F * dx);
-        //             fy += (F * dy);
-        //         }
+                let distance: number = Math.sqrt(dx * dx + dy * dy);
 
-        //         Velocity.x = (Velocity.x + fx) * 0.99;// * engine.clock.deltaTime;
-        //         Velocity.y = (Velocity.y + fy) * 0.99;// * engine.clock.deltaTime;
-
-        //         // if (
-        //         //     (Position.x + Velocity.x) <= this.params.canvasPadding ||
-        //         //     (Position.x + Velocity.x) >= this.canvas.width - this.params.canvasPadding - this.params.particleSize
-        //         // ) {
-        //         //     Velocity.x *= -1;
-        //         // }
-
-        //         // if (
-        //         //     (Position.y + Velocity.y) <= this.params.canvasPadding ||
-        //         //     (Position.y + Velocity.y) >= this.canvas.height - this.params.canvasPadding - this.params.particleSize
-        //         // ) {
-        //         //     Velocity.y *= -1;
-        //         // }
-        //     }
-        // })
+                if (distance > 0 && distance < Attraction.range) {
+                    const F: number = Attraction.force * 1 / distance;
+                    Velocity.x += ((F * dx) * engine.clock.deltaTime);
+                    Velocity.y += ((F * dy) * engine.clock.deltaTime);
+                } else {
+                    entity.components.get('Attraction').other = null;
+                }
+            }
+        })
 
         .createSystem('Movement', 'Position', 'Velocity', (_, { Boundary, Position, Velocity }) => {
             const targetVelocity = {
@@ -107,21 +104,27 @@ import { vec2 } from 'gl-matrix';
                 renderer.drawCircle(vec2.fromValues(Position.x, Position.y), Attributes.color, Attributes.size * 4, false);
             }
         })
-        .createMultpleEntities(500)
-        .onAllEntitiesNow((entity: Entity) => {
-            if (engine.rng.nextf < 0.1) {
-                entity.components.get('Attributes').type = 'Different';
-                entity.components.get('Attributes').color = [255, 0, 0, 255];
-                engine.addComponent(entity.alias, 'Attraction');
-                engine.log.debug('Added Attraction component to entity', entity.alias);
-            }
-        })
+        .createMultpleEntities(200)
+        .createEntityWithAlias('player', 'Attraction')
+        // .onAllEntitiesNow((entity: Entity) => {
+        //     if (engine.rng.nextf < 0.1) {
+        //         entity.components.get('Attributes').type = 'other';
+        //         entity.components.get('Attributes').color = [255, 0, 0, 255];
+        //         engine.addComponent(entity.alias, 'Attraction');
+        //         entity.components.set('Velocity', { x: 0, y: 0, speed: 32 });
+        //     }
+        // })
         .onTickStart(() => {
             renderer.clear();
             renderer.resize();
         })
         .onTickEnd(() => {
             stats.innerText = `FPS: ${engine.clock.fps}`;
+        })
+        .onBeforeRun(() => {
+            engine.getEntity('player').components.set('Attributes', { type: 'other', color: [255, 0, 0, 255], size: 2 });
+            engine.getEntity('player').components.set('Velocity', { x: 0, y: 0, speed: 32 });
+            // engine.duplicateEntity('player', 2);
         })
         .run();
 })();

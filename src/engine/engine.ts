@@ -166,6 +166,11 @@ export class Engine {
         return this;
     }
 
+    public getEntity(alias: string): Entity {
+        log.trace('getEntity:', { alias });
+        return this._entities.get(alias);
+    }
+
     public getEntitiesWithComponents<T extends string[]>(...components: [...T, filter: any]): Entity[] {
         const filter: any = components.pop() as any;
         const aliases: string[] = components.filter((component: any) => typeof component === 'string');
@@ -227,13 +232,21 @@ export class Engine {
     public duplicateEntity(alias: string, count: number = 1, deep: boolean = false): this {
         log.trace('duplicateEntity:', { alias, count, deep });
 
-        const zero: Entity = this._entities.get(alias);
+        const entity: Entity = this._entities.get(alias);
 
-        if (zero) {
+        if (entity) {
             if (!deep) {
-                for (let i = 0; i < count; i++) this.createEntity(...zero.components.keys());
+                for (let i = 0; i < count; i++) this.createEntity(...entity.components.keys());
             } else {
-                log.todo('duplicateEntity: deep: true');
+                for (let i = 0; i < count; i++) {
+                    const newEntity: Entity = { alias: this.rng.uid(), components: new Map<string, any>() };
+
+                    entity.components.forEach((value: any, key: string) => {
+                        newEntity.components.set(key, value);
+                    });
+
+                    this._entities.set(newEntity.alias, newEntity);
+                };
             }
 
             log.debug('duplicateEntity: duplicated entity:', alias);
@@ -303,6 +316,11 @@ export class Engine {
         if (this.isRunning) {
             requestAnimationFrame(this._tick.bind(this));
         }
+    }
+
+    public onBeforeRun(callback: () => void): this {
+        callback();
+        return this;
     }
 
     public run(): this {
