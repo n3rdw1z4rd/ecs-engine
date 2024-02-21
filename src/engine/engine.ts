@@ -47,16 +47,16 @@ export class Engine {
 
     public get rng(): RNG { return RNG.instance; }
 
-    public get entities(): Entity[] {
-        return [...this._entities.values()];
+    public get components(): string[] {
+        return [...this._components.keys()];
     }
 
-    public setAppTitle(title: string): this {
-        log.trace('setAppTitle:', { title });
+    public get systems(): string[] {
+        return [...this._systems.keys()];
+    }
 
-        log.info(`*** ${title} ***`);
-        document.title = title;
-        return this;
+    public get entities(): Entity[] {
+        return [...this._entities.values()];
     }
 
     public createComponent(alias: string, data: any = null): this {
@@ -156,8 +156,8 @@ export class Engine {
         return this.createEntityWithAlias(alias, ...components);
     }
 
-    public createMultpleEntities(count: number, ...components: string[]): this {
-        log.trace('createMultpleEntities:', { count, components });
+    public createEntities(count: number, ...components: string[]): this {
+        log.trace('createEntities:', { count, components });
 
         for (; count > 0; count--) {
             this.createEntity(...components);
@@ -268,20 +268,20 @@ export class Engine {
         return this;
     }
 
-    public onTickStart(callback: TickCallback): this {
-        log.trace('onTickStart:', { callback });
+    public beforeTick(callback: TickCallback): this {
+        log.trace('beforeTick:', { callback });
 
         this._onTickStartCallbacks.push(callback);
-        log.debug('onTickStart: added:', callback);
+        log.debug('beforeTick: added:', callback);
 
         return this;
     }
 
-    public onTickEnd(callback: TickCallback): this {
-        log.trace('onTickEnd:', { callback });
+    public afterTick(callback: TickCallback): this {
+        log.trace('afterTick:', { callback });
 
         this._onTickEndCallbacks.push(callback);
-        log.debug('onTickEnd: added:', callback);
+        log.debug('afterTick: added:', callback);
 
         return this;
     }
