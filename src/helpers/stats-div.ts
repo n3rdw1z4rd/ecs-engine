@@ -23,9 +23,9 @@ export class StatsDiv {
 
     update(engine: Engine): void {
         this.div.innerHTML = [
+            `Entities: ${engine.entities.length}`,
             `Components: ${engine.components.length}`,
             `Systems: ${engine.systems.length}`,
-            `Entities: ${engine.entities.length}`,
             `FPS: ${engine.clock.fps}`,
         ].join('<br>');
     }
