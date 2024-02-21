@@ -1,6 +1,9 @@
-import { vec2 } from 'gl-matrix';
-import { Logger } from '../engine';
-import { Color } from './types';
+import { Logger } from './engine';
+
+import './reset.css';
+import './styles.css';
+
+export type Color = string | CanvasGradient | CanvasPattern;
 
 const log: Logger = new Logger('[Canvas2DRenderer]');
 
@@ -67,27 +70,27 @@ export class CanvasRenderer {
         return false;
     }
 
-    public setPixel(position: vec2, color: Color): void {
-        log.trace('setPixel', { position, color });
+    public setPixel(x: number, y: number, color: Color): void {
+        log.trace('setPixel', { x, y, color });
 
-        this.ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
-        this.ctx.fillRect(position[0], position[1], 1, 1);
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(x, y, 1, 1);
     }
 
-    public drawRect(position: vec2, color: Color, size: number = 1): void {
-        log.trace('drawRect', { position, color, size });
+    public drawRect(x: number, y: number, color: Color, size: number = 1): void {
+        log.trace('drawRect', { x, y, color, size });
 
-        this.ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
-        this.ctx.fillRect(position[0] - size / 2, position[1] - size / 2, size, size);
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(x - size / 2, y - size / 2, size, size);
     }
 
-    public drawCircle(position: vec2, color: Color, radius: number = 1, filled: boolean = true): void {
-        log.trace('drawCircle', { position, color, radius, filled });
+    public drawCircle(x: number, y: number, color: Color, radius: number = 1, filled: boolean = true): void {
+        log.trace('drawCircle', { x, y, color, radius, filled });
 
         this.ctx.beginPath();
-        this.ctx.arc(position[0], position[1], radius, 0, 2 * Math.PI, false);
-        this.ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
-        this.ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+        this.ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        this.ctx.fillStyle = color;
+        this.ctx.strokeStyle = color;
 
         if (filled) {
             this.ctx.fill();
