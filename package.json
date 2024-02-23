@@ -1,23 +1,31 @@
 {
     "name": "@n3rdw1z4rd/ecs-engine",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "",
-    "entry": {
-        "production": "src/index.ts",
-        "development": "src/test/index.ts"
-    },
-    "main": "dist/ecs-engine.bundle.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
+        "build": "tsc",
         "dev": "webpack serve",
-        "build": "cross-env NODE_ENV=production webpack"
+        "prepublishOnly": "tsc"
     },
-    "keywords": [],
+    "keywords": [
+        "ecs",
+        "entity-component-system",
+        "entity",
+        "component",
+        "system"
+    ],
     "author": "John Wakley <john.wakley@icloud.com>",
     "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git@github.com:JohnCWakley/ecs-engine.git"
     },
+    "bugs": {
+        "url": "https://github.com/n3rdw1z4rd/ecs-engine/issues"
+    },
+    "homepage": "https://github.com/n3rdw1z4rd/ecs-engine",
     "devDependencies": {
         "@types/node": "^20.11.16",
         "cross-env": "^7.0.3",
@@ -25,6 +33,7 @@
         "html-webpack-plugin": "^5.6.0",
         "style-loader": "^3.3.4",
         "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
         "ts-shader-loader": "^2.0.2",
         "typescript": "^5.3.3",
         "webpack": "^5.90.1",

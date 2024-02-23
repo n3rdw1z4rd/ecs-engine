@@ -1,16 +1,21 @@
 {
     "compilerOptions": {
-        "target": "es2020",
-        "module": "es2020",
-        "moduleResolution": "node",
-        "noResolve": false,
-        "noImplicitAny": false,
-        "sourceMap": true,
+        "declaration": true,
+        "module": "node16",
+        "moduleResolution": "node16",
+        "outDir": "dist",
         "preserveConstEnums": true,
+        "sourceMap": true,
+        "target": "es2015",
         "lib": [
-            "dom",
-            "es6"
-        ],
-        "rootDir": "src"
-    }
+            "es2016",
+            "dom"
+        ]
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }
