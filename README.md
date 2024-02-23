@@ -98,15 +98,15 @@ engine
         y: renderer.height / 2,
     })
     .createComponent('Velocity', {
-        x: (): number => (engine.rng.nextf * 4 - 2),
-        y: (): number => (engine.rng.nextf * 4 - 2),
+        x: (): number => (Math.random() * 4 - 2),
+        y: (): number => (Math.random() * 4 - 2),
     })
     .createComponent('Appearance', {
-        color: () => engine.rng.choose(['red', 'green', 'blue', 'yellow']),
+        color: () => ['red', 'green', 'blue', 'yellow'][Math.floor(Math.random() * 4)],
         size: 2,
     })
     .includeAsDefaultComponents('Position', 'Velocity', 'Appearance')
-    .createSystem('Move', 'Position', 'Velocity', (entity: Entity, { Position, Velocity }) => {
+    .createSystem('Move', 'Position', 'Velocity', (_: Entity, { Position, Velocity }) => {
         if (Position.x + Velocity.x > renderer.width || Position.x + Velocity.x < 0) {
             Velocity.x = -Velocity.x;
         }
@@ -118,7 +118,7 @@ engine
         Position.x += Velocity.x;
         Position.y += Velocity.y;
     })
-    .createSystem('Draw', 'Position', 'Appearance', (entity: Entity, { Position, Appearance }) => {
+    .createSystem('Draw', 'Position', 'Appearance', (_: Entity, { Position, Appearance }) => {
         renderer.drawCircle(Position.x, Position.y, Appearance.color, Appearance.size);
     })
     .createEntities(1000)
@@ -128,8 +128,14 @@ engine
     })
     .afterTick(() => {
         statsDiv.update(engine);
-    })
-    .run();
+    });
+
+const update = (t: number) => {
+    engine.update();
+    requestAnimationFrame(update);
+};
+
+requestAnimationFrame(update);
 ```
 This example can be run like this:
 ```bash
