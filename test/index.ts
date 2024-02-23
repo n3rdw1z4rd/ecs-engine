@@ -39,9 +39,6 @@ engine
         renderer.drawCircle(Position.x, Position.y, Appearance.color, Appearance.size);
     })
     .createEntities(1000)
-    .onBeforeRun(() => {
-        console.debug('entities:', engine.entities);
-    })
     .beforeTick(() => {
         renderer.clear();
         renderer.resize();
