@@ -1,4 +1,4 @@
-import { Logger } from '../ecs-engine';
+import { Logger } from '..';
 
 import './reset.css';
 import './styles.css';

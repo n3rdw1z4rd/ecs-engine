@@ -1,9 +1,12 @@
 {
-    "name": "ecs-engine",
+    "name": "@n3rdw1z4rd/ecs-engine",
     "version": "0.1.0",
     "description": "",
-    "entry": "src/index.ts",
-    "main": "dist/bundle.js",
+    "entry": {
+        "production": "src/index.ts",
+        "development": "src/test/index.ts"
+    },
+    "main": "dist/ecs-engine.bundle.js",
     "scripts": {
         "dev": "webpack serve",
         "build": "cross-env NODE_ENV=production webpack"
