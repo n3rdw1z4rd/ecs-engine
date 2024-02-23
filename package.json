@@ -16,7 +16,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git@github.com:JohnCWakley/ecs-engine.git"
+        "url": "git+ssh://git@github.com:n3rdw1z4rd/ecs-engine.git"
     },
     "devDependencies": {
         "@types/node": "^20.11.16",
