@@ -26,7 +26,7 @@ export class StatsDiv {
             `Entities: ${engine.entities.length}`,
             `Components: ${engine.components.length}`,
             `Systems: ${engine.systems.length}`,
-            `FPS: ${engine.clock.fps}`,
+            // `FPS: ${engine.clock.fps}`,
         ].join('<br>');
     }
 }
