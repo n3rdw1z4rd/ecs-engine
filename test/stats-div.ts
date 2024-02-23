@@ -1,4 +1,4 @@
-import { Engine } from '..';
+import { EcsEngine } from '..';
 
 export class StatsDiv {
     docTitle: string;
@@ -21,7 +21,7 @@ export class StatsDiv {
         document.body.appendChild(this.div);
     }
 
-    update(engine: Engine): void {
+    update(engine: EcsEngine): void {
         this.div.innerHTML = [
             `Entities: ${engine.entities.length}`,
             `Components: ${engine.components.length}`,

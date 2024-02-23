@@ -11,7 +11,7 @@ export interface Entity {
     components: Map<string, any>,
 };
 
-export class Engine {
+export class EcsEngine {
     private _globals: Map<string, any> = new Map<string, any>();
     private _entities: Map<string, Entity> = new Map<string, Entity>();
     private _components: Map<string, any> = new Map<string, any>();
@@ -273,15 +273,15 @@ export class Engine {
         this._onTickEndCallbacks.forEach((cb: TickCallback) => cb());
     }
 
-    public static get instance(): Engine {
-        if (!Engine._instance) {
-            Engine._instance = new Engine();
+    public static get instance(): EcsEngine {
+        if (!EcsEngine._instance) {
+            EcsEngine._instance = new EcsEngine();
         }
 
-        return Engine._instance;
+        return EcsEngine._instance;
     }
 
-    private static _instance: Engine;
+    private static _instance: EcsEngine;
 
     private constructor() { }
 }

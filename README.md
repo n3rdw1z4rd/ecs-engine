@@ -8,10 +8,10 @@ Welcome! This project is an attempt to create an ECS framework that has an easy 
 
 ## Usage:
 ```typescript
-import { Engine } from '@n3rdw1z4rd/ecs-engine';
+import { EcsEngine } from '@n3rdw1z4rd/ecs-engine';
 
 // get the instance:
-const engine: Engine = Engine.instance;
+const engine: EcsEngine = EcsEngine.instance;
 
 // create a component:
 engine.createComponent('Position', { x: 0, y: 0 });
@@ -44,7 +44,7 @@ renderer.render(() => {
 - `uid(length: number = 8): string`
   - Generates a unique identifier.
 - `createComponent(uid: string, data: any = null): this`
-  - Creates a new component. Data should be in this form: `{ value: 'the value' }`, if the value(s) are a function, like: `{ value: () => Math.random() }`, then, when the Entity is created, the Engine will execute the function to create unique data for that property.
+  - Creates a new component. Data should be in this form: `{ value: 'the value' }`, if the value(s) are a function, like: `{ value: () => Math.random() }`, then, when the Entity is created, the EcsEngine will execute the function to create unique data for that property.
 - `includeAsDefaultComponents(...components: string[]): this`
   - Includes components as default components. Any entities created after this call will automatically have the components listed.
 - `createSystem<T extends string[]>(uid: string, ...components: [...T, SystemCallback]): this`
@@ -81,7 +81,7 @@ renderer.render(() => {
 ## Full Example:
 The code below can be found in `test/index.ts`:
 ```typescript
-import { Engine, Entity } from '..';
+import { EcsEngine, Entity } from '..';
 import { CanvasRenderer } from './canvas-renderer';
 import { StatsDiv } from './stats-div';
 
@@ -90,7 +90,7 @@ renderer.appendTo(document.body);
 
 const statsDiv: StatsDiv = new StatsDiv();
 
-const engine: Engine = Engine.instance;
+const engine: EcsEngine = EcsEngine.instance;
 
 engine
     .createComponent('Position', {
