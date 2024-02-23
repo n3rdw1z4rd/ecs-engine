@@ -1,4 +1,4 @@
-import { Engine, Entity } from '..';
+import { EcsEngine, Entity } from '..';
 import { CanvasRenderer } from './canvas-renderer';
 import { StatsDiv } from './stats-div';
 
@@ -7,7 +7,7 @@ renderer.appendTo(document.body);
 
 const statsDiv: StatsDiv = new StatsDiv();
 
-const engine: Engine = Engine.instance;
+const engine: EcsEngine = EcsEngine.instance;
 
 engine
     .createComponent('Position', {
