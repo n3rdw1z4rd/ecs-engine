@@ -1,16 +1,3 @@
-# ecs-engine
-
-Welcome! This project is an attempt to create an ECS framework that has an easy to use functional programing interface. The design idea is that the programming flow is easy to understand, and easy to work with.
-
-### Installation:
-* npm: `$ npm install @n3rdw1z4rd/ecs-engine`
-* yarn: `$ yarn install @n3rdw1z4rd/ecs-engine`
-
-### Usage:
-The code below can be found in `src/test/index.ts`, as well as it's dependencies:
-```typescript
-// src/test/index.ts
-
 import { Engine, Entity } from '..';
 import { CanvasRenderer } from './canvas-renderer';
 import { StatsDiv } from './stats-div';
@@ -63,7 +50,3 @@ engine
         statsDiv.update(engine);
     })
     .run();
-```
-
-### Screenshot:
-![image](https://github.com/JohnCWakley/ecs-engine/assets/33690133/d6e07110-33f6-4b87-a569-6239e540affe)

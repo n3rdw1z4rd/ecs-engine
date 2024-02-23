@@ -1,10 +1,5 @@
 const isDev: boolean = (process.env.NODE_ENV?.toLowerCase() !== 'production');
 
-export const log = isDev ? console.debug : () => { };
-export const logInfo = console.info;
-export const logWarn = console.warn;
-export const logError = console.error;
-
 export class Logger {
     constructor(
         public prefix: string = '',
@@ -13,26 +8,30 @@ export class Logger {
     ) { }
 
     todo(...args: any[]) {
-        logWarn('*** TODO:', ...args);
+        console.debug(
+            '%c[TODO]%c ' + args.join(' '),
+            'color: black; background-color: yellow; font-weight: bold;',
+            'font-weight: bold;',
+        );
     }
 
     trace(...args: any[]) {
-        if (this.traceEnabled) log(this.prefix, this.tracePrefix, ...args);
+        if (this.traceEnabled) console.log(this.prefix, this.tracePrefix, ...args);
     }
 
     debug(...args: any[]) {
-        if (isDev) log(this.prefix, ...args);
+        if (isDev) console.debug(this.prefix, ...args);
     }
 
     info(...args: any[]) {
-        logInfo(this.prefix, ...args);
+        console.info(this.prefix, ...args);
     }
 
     warn(...args: any[]) {
-        logWarn(this.prefix, ...args);
+        console.warn(this.prefix, ...args);
     }
 
     error(...args: any[]) {
-        logError(this.prefix, ...args);
+        console.error(this.prefix, ...args);
     }
 }

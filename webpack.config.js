@@ -1,18 +1,22 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { entry, main } = require('./package.json');
 
 const DEV = (process.env.NODE_ENV?.toLowerCase() !== 'production');
 const ENV = DEV ? 'development' : 'production';
+const [OUTPUT_PATH, OUTPUT_FILENAME] = main.split('/');
 
-console.log(`*** ${ENV.toUpperCase()} ***\n`);
+console.log(`*** ${ENV.toUpperCase()} BUILD ***\n`);
+console.log('output:', main, '\n');
 
 module.exports = {
     stats: 'minimal',
     mode: DEV ? 'development' : 'production',
     devtool: DEV ? 'eval-cheap-source-map' : undefined,
-    entry: resolve(__dirname, 'src/index.ts'),
+    entry: resolve(__dirname, DEV ? entry.development : entry.production),
     output: {
-        filename: 'bundle.js',
+        filename: DEV ? 'test.bundle.js' : OUTPUT_FILENAME,
+        path: resolve(__dirname, OUTPUT_PATH),
         clean: true,
     },
     resolve: {
@@ -44,7 +48,7 @@ module.exports = {
             publicPath: '/',
         }
     },
-    plugins: [
+    plugins: DEV ? [
         new HtmlWebpackPlugin({ inject: true }),
-    ],
+    ] : [],
 };
