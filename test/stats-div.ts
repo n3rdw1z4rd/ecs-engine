@@ -1,4 +1,4 @@
-import { EcsEngine } from '..';
+import { EcsEngine } from '../src';
 
 export class StatsDiv {
     docTitle: string;

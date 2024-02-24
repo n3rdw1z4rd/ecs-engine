@@ -175,12 +175,20 @@ export class EcsEngine {
         return entities;
     }
 
-    public addComponent(uid: string, component: string): this {
+    public addComponent(uid: string, component: string, values: any = {}): this {
         const entity: Entity = this._entities.get(uid);
 
         if (entity) {
             if (this._components.has(component)) {
-                entity.components.set(component, this._components.get(component));
+                const comp: any = this._components.get(component);
+
+                const componentData: any = {
+                    ...comp,
+                    ...values,
+                };
+
+                entity.components.set(component, componentData);
+
                 console.log('[ECS] addComponent: added component:', component, 'to entity:', uid);
             } else {
                 console.warn('[ECS] addComponent: component not found:', component);
