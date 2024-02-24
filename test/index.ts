@@ -1,4 +1,4 @@
-import { EcsEngine, Entity } from '..';
+import { EcsEngine, Entity } from '../src';
 import { CanvasRenderer } from './canvas-renderer';
 import { StatsDiv } from './stats-div';
 
