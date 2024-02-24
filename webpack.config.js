@@ -19,11 +19,7 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
-            },
-            {
-                test: /\.(glsl|vert|frag)$/,
-                use: ['ts-shader-loader'],
-            },
+            }
         ],
     },
     devServer: {
