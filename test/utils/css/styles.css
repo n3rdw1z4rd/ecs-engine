@@ -17,6 +17,12 @@ body {
 
 canvas {
     display: block;
-    width: 100%;
-    height: 100%;
+}
+
+.fps {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: white;
+    padding: 4px;
 }
