@@ -141,7 +141,7 @@ export class EcsEngine {
         return this;
     }
 
-    public getEntity(uid: string): Entity {
+    public getEntity(uid: string): Entity | undefined {
         return this._entities.get(uid);
     }
 
@@ -172,7 +172,7 @@ export class EcsEngine {
     }
 
     public addComponent(uid: string, component: string, values: any = {}): this {
-        const entity: Entity = this._entities.get(uid);
+        const entity: Entity | undefined = this._entities.get(uid);
 
         if (entity) {
             if (this._components.has(component)) {
@@ -204,7 +204,7 @@ export class EcsEngine {
     }
 
     public duplicateEntity(uid: string, count: number = 1, deep: boolean = false): this {
-        const entity: Entity = this._entities.get(uid);
+        const entity: Entity | undefined = this._entities.get(uid);
 
         if (entity) {
             if (!deep) {
@@ -254,7 +254,7 @@ export class EcsEngine {
     }
 
     public runSystem(uid: string): this {
-        const system: System = this._systems.get(uid);
+        const system: System | undefined = this._systems.get(uid);
 
         if (system) {
             this._entities.forEach((entity: Entity) => {
