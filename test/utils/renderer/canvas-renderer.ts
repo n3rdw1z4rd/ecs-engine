@@ -1,31 +1,36 @@
 import { Color } from './color';
 
 export class CanvasRenderer {
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
+    private _screenCanvas: HTMLCanvasElement;
+    private _bufferCanvas: OffscreenCanvas;
+    
+    private _screenContext: CanvasRenderingContext2D;
+    private _bufferContext: OffscreenCanvasRenderingContext2D;
 
-    get width(): number { return this.canvas.width; }
-    get height(): number { return this.canvas.height; }
+    get width(): number { return this._screenCanvas.width; }
+    get height(): number { return this._screenCanvas.height; }
 
     pixelRatio: number = window.devicePixelRatio;
 
     constructor(canvas?: HTMLCanvasElement) {
-        this.canvas = canvas ?? document.createElement('canvas');
+        this._screenCanvas = canvas ?? document.createElement('canvas');
+        this._bufferCanvas = new OffscreenCanvas(this._screenCanvas.width, this._screenCanvas.height);
 
-        this.ctx = this.canvas.getContext('2d')!;
+        this._screenContext = this._screenCanvas.getContext('2d')!;
+        this._bufferContext = this._bufferCanvas.getContext('2d')!;
 
-        if (!this.ctx) {
+        if (!this._screenContext || !this._bufferContext) {
             throw 'Failed to create CanvasRenderingContext2D';
         }
     }
 
     appendTo(target: HTMLElement | null, autoResize: boolean = true): void {
-        if (this.canvas.parentNode) {
-            this.canvas.parentNode.removeChild(this.canvas);
+        if (this._screenCanvas.parentNode) {
+            this._screenCanvas.parentNode.removeChild(this._screenCanvas);
         }
 
         if (target) {
-            target.appendChild(this.canvas);
+            target.appendChild(this._screenCanvas);
 
             if (autoResize) {
                 this.resize();
@@ -35,16 +40,19 @@ export class CanvasRenderer {
 
     resize(displayWidth?: number, displayHeight?: number): boolean {
         const { width, height } = (
-            this.canvas.parentElement?.getBoundingClientRect() ??
-            this.canvas.getBoundingClientRect()
+            this._screenCanvas.parentElement?.getBoundingClientRect() ??
+            this._screenCanvas.getBoundingClientRect()
         );
 
         displayWidth = (0 | (displayWidth ?? width) * this.pixelRatio);
         displayHeight = (0 | (displayHeight ?? height) * this.pixelRatio);
 
-        if (this.canvas.width !== displayWidth || this.canvas.height !== displayHeight) {
-            this.canvas.width = displayWidth
-            this.canvas.height = displayHeight;
+        if (this._screenCanvas.width !== displayWidth || this._screenCanvas.height !== displayHeight) {
+            this._screenCanvas.width = displayWidth
+            this._screenCanvas.height = displayHeight;
+
+            this._bufferCanvas.width = displayWidth;
+            this._bufferCanvas.height = displayHeight;
 
             return true;
         }
@@ -52,12 +60,14 @@ export class CanvasRenderer {
         return false;
     }
 
-    clear(): void {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    setPixel(x: number, y: number, color: Color, size: number = 2): void {
+        this._bufferContext.fillStyle = color.hexStr;
+        this._bufferContext.fillRect(x - (size / 2), y - (size / 2), size, size);
     }
 
-    setPixel(x: number, y: number, color: Color, size: number = 2): void {
-        this.ctx.fillStyle = color.hexStr;
-        this.ctx.fillRect(x - (size / 2), y - (size / 2), size, size);
+    render(): void {
+        this._screenContext.clearRect(0, 0, this._screenCanvas.width, this._screenCanvas.height);
+        this._screenContext.drawImage(this._bufferCanvas, 0, 0);
+        this._bufferContext.clearRect(0, 0, this._screenCanvas.width, this._screenCanvas.height);
     }
 }

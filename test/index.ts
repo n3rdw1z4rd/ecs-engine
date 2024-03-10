@@ -47,12 +47,12 @@ engine
     })
     .createEntities(1000)
     .beforeTick(() => {
-        renderer.clear();
-        renderer.resize();
+        // renderer.resize(); TODO: skip this for now, may move to an event handler
     });
 
 clock.run((deltaTime: number) => {
     engine.update();
+    renderer.render();
 
     statsDiv.updateContent({
         Entities: engine.entities.length,
