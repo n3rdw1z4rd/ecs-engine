@@ -74,11 +74,7 @@ export class EcsEngine {
     public createSystem<T extends string[]>(uid: string, ...components: [...T, SystemCallback]): this {
         const callback: SystemCallback = components.pop() as SystemCallback;
 
-        const comps: string[] = components.map((comp: any) => {
-            if (typeof comp === 'string') {
-                return comp;
-            }
-        });
+        const comps: string[] = components.filter((comp: any) => (typeof comp === 'string')) as string[];
 
         if (!this._systems.has(uid)) {
             this._systems.set(uid, { components: comps, callback });

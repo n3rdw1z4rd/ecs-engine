@@ -1,14 +1,11 @@
 {
+    "extends": "@tsconfig/node-lts/tsconfig.json",
     "compilerOptions": {
         "declaration": true,
-        "module": "node16",
-        "moduleResolution": "node16",
         "outDir": "dist",
         "preserveConstEnums": true,
         "sourceMap": true,
-        "target": "es2015",
         "lib": [
-            "es2016",
             "dom"
         ]
     },
