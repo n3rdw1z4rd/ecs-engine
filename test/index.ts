@@ -49,9 +49,6 @@ engine
     .beforeTick(() => {
         renderer.clear();
         renderer.resize();
-    })
-    .afterTick(() => {
-        statsDiv.updateContent(engine);
     });
 
 clock.run((deltaTime: number) => {
