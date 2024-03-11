@@ -1,11 +1,13 @@
-import './utils/css';
+import '@n3rdw1z4rd/core-ts/dist/css/reset.css';
+import '@n3rdw1z4rd/core-ts/dist/css/my-styles.css';
 import { EcsEngine, Entity } from '../src';
 import { StatsDiv } from './stats-div';
-import { CanvasRenderer, Clock, Color } from './utils';
+import { CanvasRenderer, Clock, Color } from '@n3rdw1z4rd/core-ts';
 
 const clock: Clock = new Clock();
 const statsDiv: StatsDiv = new StatsDiv();
 const renderer: CanvasRenderer = new CanvasRenderer();
+// renderer.pixelRatio = 1; // uncomment if on a retina display, for now
 renderer.appendTo(document.body);
 const engine: EcsEngine = EcsEngine.instance;
 
@@ -45,10 +47,7 @@ engine
     .createSystem('Draw', 'Position', 'Appearance', (_: Entity, { Position, Appearance }) => {
         renderer.setPixel(Position.x, Position.y, Appearance.color, Appearance.size);
     })
-    .createEntities(1000)
-    .beforeTick(() => {
-        // renderer.resize(); TODO: skip this for now, may move to an event handler
-    });
+    .createEntities(1000);
 
 clock.run((deltaTime: number) => {
     engine.update();
