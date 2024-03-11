@@ -1,13 +1,22 @@
+import '@n3rdw1z4rd/core-ts/dist/css/reset.css';
+import '@n3rdw1z4rd/core-ts/dist/css/my-styles.css';
 import { EcsEngine, Entity } from '../src';
-import { CanvasRenderer } from './canvas-renderer';
 import { StatsDiv } from './stats-div';
+import { CanvasRenderer, Clock, Color } from '@n3rdw1z4rd/core-ts';
 
-const renderer: CanvasRenderer = new CanvasRenderer();
-renderer.appendTo(document.body);
-
+const clock: Clock = new Clock();
 const statsDiv: StatsDiv = new StatsDiv();
-
+const renderer: CanvasRenderer = new CanvasRenderer();
+// renderer.pixelRatio = 1; // uncomment if on a retina display, for now
+renderer.appendTo(document.body);
 const engine: EcsEngine = EcsEngine.instance;
+
+const colors: Color[] = [
+    Color.Red,
+    Color.Green,
+    Color.Blue,
+    Color.Yellow,
+]
 
 engine
     .createComponent('Position', {
@@ -19,7 +28,7 @@ engine
         y: (): number => (Math.random() * 4 - 2),
     })
     .createComponent('Appearance', {
-        color: () => ['red', 'green', 'blue', 'yellow'][Math.floor(Math.random() * 4)],
+        color: () => colors[Math.floor(Math.random() * colors.length)],
         size: 2,
     })
     .includeAsDefaultComponents('Position', 'Velocity', 'Appearance')
@@ -36,20 +45,18 @@ engine
         Position.y += Velocity.y;
     })
     .createSystem('Draw', 'Position', 'Appearance', (_: Entity, { Position, Appearance }) => {
-        renderer.drawCircle(Position.x, Position.y, Appearance.color, Appearance.size);
+        renderer.setPixel(Position.x, Position.y, Appearance.color, Appearance.size);
     })
-    .createEntities(1000)
-    .beforeTick(() => {
-        renderer.clear();
-        renderer.resize();
-    })
-    .afterTick(() => {
-        statsDiv.update(engine);
-    });
+    .createEntities(1000);
 
-const update = (t: number) => {
+clock.run((deltaTime: number) => {
     engine.update();
-    requestAnimationFrame(update);
-};
+    renderer.render();
 
-requestAnimationFrame(update);
+    statsDiv.updateContent({
+        Entities: engine.entities.length,
+        Components: engine.components.length,
+        Systems: engine.systems.length,
+        FPS: clock.fps,
+    });
+});

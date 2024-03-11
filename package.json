@@ -27,6 +27,7 @@
     },
     "homepage": "https://github.com/n3rdw1z4rd/ecs-engine",
     "devDependencies": {
+        "@n3rdw1z4rd/core-ts": "^0.2.0",
         "@tsconfig/node-lts": "^20.1.1",
         "@types/node": "^20.11.16",
         "cross-env": "^7.0.3",

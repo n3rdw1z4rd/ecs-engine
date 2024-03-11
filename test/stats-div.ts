@@ -1,5 +1,3 @@
-import { EcsEngine } from '../src';
-
 export class StatsDiv {
     docTitle: string;
     div: HTMLDivElement;
@@ -21,12 +19,7 @@ export class StatsDiv {
         document.body.appendChild(this.div);
     }
 
-    update(engine: EcsEngine): void {
-        this.div.innerHTML = [
-            `Entities: ${engine.entities.length}`,
-            `Components: ${engine.components.length}`,
-            `Systems: ${engine.systems.length}`,
-            // `FPS: ${engine.clock.fps}`,
-        ].join('<br>');
+    updateContent(data: object): void {
+        this.div.innerHTML = Object.entries(data).map(([key, value]) => `${key}: ${value}`).join('<br>');
     }
 }
