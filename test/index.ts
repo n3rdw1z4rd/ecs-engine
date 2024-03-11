@@ -2,7 +2,7 @@ import '@n3rdw1z4rd/core-ts/dist/css/reset.css';
 import '@n3rdw1z4rd/core-ts/dist/css/my-styles.css';
 import { EcsEngine, Entity } from '../src';
 import { StatsDiv } from './stats-div';
-import { CanvasRenderer, Clock, Color } from '@n3rdw1z4rd/core-ts';
+import { CanvasRenderer, Clock, Color, rng } from '@n3rdw1z4rd/core-ts';
 
 const clock: Clock = new Clock();
 const statsDiv: StatsDiv = new StatsDiv();
@@ -24,11 +24,11 @@ engine
         y: renderer.height / 2,
     })
     .createComponent('Velocity', {
-        x: (): number => (Math.random() * 4 - 2),
-        y: (): number => (Math.random() * 4 - 2),
+        x: (): number => (rng() * 4 - 2),
+        y: (): number => (rng() * 4 - 2),
     })
     .createComponent('Appearance', {
-        color: () => colors[Math.floor(Math.random() * colors.length)],
+        color: () => colors[Math.floor(rng() * colors.length)],
         size: 2,
     })
     .includeAsDefaultComponents('Position', 'Velocity', 'Appearance')
